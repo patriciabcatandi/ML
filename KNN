@@ -1,0 +1,32 @@
+# K-Nearest Neighbors (K-NN) with 15 neighbors. Get Test accuracy score
+
+# Importing the libraries
+import pandas as pd
+
+# Importing the dataset
+datadir = '/Users/.../'
+dataset = pd.read_csv(os.path.join(datadir,'bbb.csv'))
+X = dataset.drop('target', axis=1)
+y = dataset['target']
+
+# Splitting the dataset into the Training set and Test in folds using first 10% of the data and Fitting as test,
+# then the second 10% of dataset and so on
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
+
+len_chunks = len(X)/10
+acc = np.array([])
+classifier = KNeighborsClassifier(n_neighbors=15, metric='minkowski', p=2)
+index = np.arange(0,len_chunks)
+for i in range (0,10):
+   X_train = X.drop(index)
+   X_test = X.iloc[index,:]
+   y_train = y.drop(index)
+   y_test = y.iloc[index]
+   classifier.fit(X_train, y_train)
+   y_pred = classifier.predict(X_test)
+   acc = np.append(acc ,accuracy_score(y_test, y_pred))
+   index = index + len_chunks
+
+print("KNN Cross Validation")
+print("Accuracy Score Test: {:.2f}%".format(acc.mean() *100))
