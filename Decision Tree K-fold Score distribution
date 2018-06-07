@@ -1,0 +1,36 @@
+# Importing the libraries
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+datadir = '/Users/.../'
+dataset = pd.read_csv(os.path.join(datadir,'bbb.csv'))
+X = dataset.drop('target', axis=1)
+y = dataset['target']
+
+# K-fold cross-validation
+from sklearn.tree import DecisionTreeRegressor
+dt = DecisionTreeRegressor(random_state=0, criterion="mse")
+# Use cross_val_score function
+# Need to put the entirety of X and y, not X_train or y_train
+from sklearn.cross_validation import cross_val_score
+scores = -cross_val_score(dt, X, y, cv=10, scoring='neg_mean_absolute_error')
+print('k-fold score: {}'.format(np.array(scores)))
+print('Average score: {}'.format(np.mean(scores)))
+
+# Score distribution
+import seaborn as sns
+sns.distplot(scores)
+plt.title('Average score: {}'.format(np.mean(scores)))
+
+# Just a note if you want to predict using this script
+from sklearn.cross_validation import cross_val_predict
+scores_test = -cross_val_predict(dt, X, y, cv=10)#, scoring='neg_mean_absolute_error')
+print('k-fold score: {}'.format(np.array(scores_test)))
+print('Average score: {}'.format(np.mean(scores_test)))
+
+from sklearn.model_selection import cross_validate
+cv_results = cross_validate(dt, X, y, cv=10, scoring='neg_mean_absolute_error', return_train_score=True)
+sorted(cv_results.keys())
+cv_results['test_score']
+cv_results['train_score']
