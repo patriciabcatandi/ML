@@ -1,0 +1,55 @@
+# Linear Regression with RIDGE using LOO and K-fold
+
+# Importing the libraries
+import numpy as np
+import pandas as pd
+
+# Importing the dataset
+datadir = '/Users/.../'
+dataset = pd.read_csv(os.path.join(datadir,'bbb.csv'))
+X = dataset.drop('target', axis=1)
+y = dataset['target']
+
+
+
+# Linear Regression with RIDGE using LOO (Leave One Out)
+from sklearn import model_selection
+from sklearn.linear_model import Ridge
+from sklearn.model_selection import cross_validate
+
+loo = model_selection.LeaveOneOut()
+classifier = Ridge(alpha=1.7, random_state = 0)
+cv_results = cross_validate(classifier, X, y, cv=loo, scoring= 'neg_mean_squared_error', return_train_score=True)
+print("RMSE Test: {:.2f} , RMSE Training: {:.2f} " .format (np.sqrt(-cv_results['test_score'].mean()), np.sqrt(-cv_results['train_score'].mean())))
+sorted(cv_results.keys())
+
+
+
+# Linear Regression with RIDGE using K-fold
+from sklearn.linear_model import Ridge
+from sklearn.model_selection import KFold
+X = dataset.drop('target', axis=1)
+y = dataset['target']
+kf = KFold(n_splits=len(X), random_state = 0)
+kf.get_n_splits(X)
+classifier = Ridge(alpha=1.7, random_state = 0)
+test = np.array([])
+train = np.array([])
+X_train = pd.DataFrame()
+X_test = pd.DataFrame()
+for train_index, test_index in kf.split(X):
+   #print("TRAIN:", train_index, "TEST:", test_index)
+   X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+   y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+   classifier.fit(X_train, y_train)
+   y_predicted = classifier.predict(X_test)
+   test = np.append(test, y_test - y_predicted)
+   y_predicted_train = classifier.predict(X_train)
+   train = np.append(train, y_train - y_predicted_train)
+
+# calcule mse
+rmse_test = (np.mean(test ** 2)) ** 0.5
+rmse_train = (np.mean(train ** 2)) ** 0.5
+
+print("Linear Regression RMSE")
+print("RMSE Test: {:.2f}, RMSE Training: {:.2f}".format(rmse_test, rmse_train))
