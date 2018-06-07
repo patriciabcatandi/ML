@@ -1,0 +1,66 @@
+# Naive Bayes
+
+# Importing the libraries
+import numpy as np
+import pandas as pd
+
+# Importing the dataset
+datadir = '/Users/.../'
+dataset = pd.read_csv(os.path.join(datadir,'bbb.csv'))
+X = dataset.drop('Target', axis=1)
+y = dataset['Target']
+
+# Dummies 
+X = pd.get_dummies(X, columns=X.columns, drop_first=True)
+
+############## parte A ##############
+# Splitting the dataset into the Training set and Test set
+# first 500 lines are training dataset (validacao cruzada no metodo de HOLD OUT)
+X_train = X.iloc[:501, :]
+X_test = X.iloc[501:, :]
+y_train = y.iloc[:501, ]
+y_test = y.iloc[501:, ]
+
+
+# Fitting Naive Bayes to the Training set
+from sklearn.naive_bayes import GaussianNB
+classifier = GaussianNB()
+classifier.fit(X_train, y_train)
+
+# Predicting the Test set results
+y_pred = classifier.predict(X_test)
+
+# Calculating the accuracy
+from sklearn.metrics import confusion_matrix
+cm = confusion_matrix(y_test, y_pred)
+tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
+
+# Predicting the Test set results and the accuracy score
+from sklearn.metrics import accuracy_score
+accuracy_score_test = accuracy_score(y_test, y_pred)#, normalize=True)
+
+# Predicting the Training set results and the accuracy score
+y_pred_train = classifier.predict(X_train)
+accuracy_score_train = accuracy_score(y_train, y_pred_train)#, normalize=True)
+
+print("Accuracy Score Test: {:.2f}%, Accuracy Score Training: {:.2f}%".format(accuracy_score_test * 100,
+                                                                              accuracy_score_train * 100))
+                                                                              
+                                                                              
+                                                                              
+                                                                              
+                                                                                                                                              
+                                                                              
+############## Parte B ##############                                                                          
+# leave one out with training and test set score
+from sklearn import model_selection
+from sklearn.naive_bayes import GaussianNB
+
+from sklearn.model_selection import cross_validate
+loo = model_selection.LeaveOneOut()
+classifier = GaussianNB()
+cv_results = cross_validate(classifier, X, y, cv=loo, scoring='accuracy', return_train_score=True)
+print("Accuracy Score Test: %.2f%% , Accuracy Score Training: %.2f%% " % (cv_results['test_score'].mean() * 100.0, cv_results['train_score'].mean() * 100.0))
+sorted(cv_results.keys())
+# cv_results['test_score'].mean()
+# cv_results['train_score']
